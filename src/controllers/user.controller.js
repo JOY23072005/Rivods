@@ -33,13 +33,17 @@ export const updateProfile = async (req,res) => {
 
     const userId = req.userId;
     const updatedUser = await User.findById(userId).select("-password");
-    
+    if (!updatedUser) {
+      return res.status(404).json({
+          message: "User not found"
+      });
+    }
     if(name) updatedUser.name = name;
     if(email && isEmailVerified) updatedUser.email = email;
     if(phone && isPhoneVerified) updatedUser.phone = phone;
     if(roll) updatedUser.roll = roll;
-    if(empid) updatedUser.empid = empid;
-    if(orgid) updatedUser.orgid = orgid;
+    if(empid) updatedUser.employeeId = empid;
+    if(orgid) updatedUser.organizationId = orgid;
     if(dob) updatedUser.dob = dob;
     if(gender) updatedUser.gender = gender;
 

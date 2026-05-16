@@ -78,6 +78,36 @@ const userSchema = new mongoose.Schema(
                 default: null,
             },
         },
+         // ===== FITNESS / REWARD DATA =====
+
+        totalSteps: {
+        type: Number,
+        default: 0,
+        min: 0,
+        },
+
+        rewardCoinsBalance: {
+        type: Number,
+        default: 0,
+        min: 0,
+        },
+
+        totalRewardCoinsEarned: {
+        type: Number,
+        default: 0,
+        min: 0,
+        },
+
+        totalRewardCoinsRedeemed: {
+        type: Number,
+        default: 0,
+        min: 0,
+        },
+
+        lastSyncedAt: {
+        type: Date,
+        default: null,
+        },
 
     },
     { timestamps: true }
@@ -86,6 +116,24 @@ const userSchema = new mongoose.Schema(
 // Compound unique index (ensures email is unique only inside the same org)
 userSchema.index({ organizationId: 1, email: 1 }, { unique: true });
 userSchema.index({ organizationId: 1, phone: 1 }, { unique: true });
+
+// employee lookup
+userSchema.index({
+  organizationId: 1,
+  employeeId: 1,
+});
+
+// admin dashboard queries
+userSchema.index({
+  organizationId: 1,
+  role: 1,
+});
+
+// leaderboard / analytics
+userSchema.index({
+  organizationId: 1,
+  totalSteps: -1,
+});
 
 userSchema.pre("save", async function () {
     if (!this.isModified("password")) return;

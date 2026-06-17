@@ -41,6 +41,7 @@ export const claimReward = async (req, res) => {
 
     // deduct coins
     user.rewardCoinsBalance -= reward.coinCost;
+    user.totalRewardCoinsRedeemed += reward.coinCost;
 
     await user.save();
 

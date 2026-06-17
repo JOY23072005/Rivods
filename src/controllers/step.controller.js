@@ -47,6 +47,7 @@ export const syncSteps = async (req, res) => {
 
       user.totalSteps += steps;
       user.rewardCoinsBalance += earnedCoins;
+      user.totalRewardCoinsEarned +=earnedCoins;
 
     } else {
       // update existing log
@@ -59,7 +60,7 @@ export const syncSteps = async (req, res) => {
 
       const extraSteps = steps - dailyLog.steps;
 
-      const updatedCoins = Math.floor(steps / 500);
+      const updatedCoins = Math.floor(steps / process.env.REWARD_STEPS);
 
       const extraCoins =
         updatedCoins - dailyLog.coinsEarned;

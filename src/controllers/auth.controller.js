@@ -84,8 +84,44 @@ export const signup = async (req,res) =>{
             });
         }
     } catch (error) {
-        console.error("signup error:",error.message);
-        return res.status(500).json({ message: "Server error" });
+        console.error("signup error:", error);
+
+        // Duplicate key error
+        if (error.code === 11000) {
+
+            // Which field caused the duplicate?
+            const duplicateField = Object.keys(error.keyPattern)[1] ||
+                                Object.keys(error.keyPattern)[0];
+
+            let message = "Duplicate value exists";
+
+            switch (duplicateField) {
+                case "email":
+                    message = "Email already exists";
+                    break;
+
+                case "phone":
+                    message = "Phone number already exists";
+                    break;
+
+                case "employeeId":
+                    message = "Employee ID already exists";
+                    break;
+
+                default:
+                    message = `${duplicateField} already exists`;
+            }
+
+            return res.status(409).json({
+                success: false,
+                message,
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
     }
 
 }

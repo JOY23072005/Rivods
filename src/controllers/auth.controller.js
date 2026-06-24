@@ -149,6 +149,12 @@ export const login = async (req,res) =>{
             return res.status(400).json({message:"Invalid credentials"});
         }
         
+        if (!user.isActive) {
+            return res.status(403).json({
+                message: "Account disabled",
+            });
+        }
+
         const isCorrect = await bcrypt.compare(password,user.password);
         if(!isCorrect){
             return res.status(400).json({message:"Invalid credentials"});
@@ -203,6 +209,12 @@ export const changePass = async (req, res) => {
         const userId = req.userId;
         const user = await User.findById(userId).select("+password");
 
+        if (!user.isActive) {
+            return res.status(403).json({
+                message: "Account disabled",
+            });
+        }
+
         if (!user) {
             return res.status(400).json({ message: "User not found" });
         }
@@ -247,6 +259,12 @@ export const requestOtp = async (req, res) => {
         $or: [{ email }, { phone }],
         organizationId: orgid,
     });
+
+    if (!user.isActive) {
+        return res.status(403).json({
+            message: "Account disabled",
+        });
+    }
 
     // Purpose-based validation
     if ((purpose === "LOGIN" || purpose === "RESET_PASSWORD") && !user) {

@@ -2,6 +2,7 @@ import { connectDB } from "../lib/db.js";
 
 import User from "../models/user.model.js";
 import DailyStepLog from "../models/dailyStepLog.model.js";
+import { updateChallengeProgress } from "../lib/utils/updateChallengeProgress.js";
 
 export const syncSteps = async (req, res) => {
   try {
@@ -74,6 +75,8 @@ export const syncSteps = async (req, res) => {
       user.rewardCoinsBalance += extraCoins;
       user.totalRewardCoinsEarned += extraCoins;
     }
+
+    updateChallengeProgress(userId);
 
     user.lastSyncedAt = new Date();
 

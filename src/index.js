@@ -7,6 +7,8 @@ import OrgRoutes from "./routes/org.route.js";
 import redeemRoutes from "./routes/redemption.route.js"
 import rewardRoutes from "./routes/reward.route.js"
 import stepRoutes from "./routes/step.route.js"
+import UserManageRoutes from "./routes/userManagement.route.js"
+import ChallengeRoutes from "./routes/challenge.route.js"
 
 import dns from "dns"
 // Setting Google or Cloudflare DNS before connecting
@@ -27,6 +29,8 @@ app.use("/org", OrgRoutes);
 app.use("/step", stepRoutes);
 app.use("/reward", rewardRoutes);
 app.use("/redeem", redeemRoutes);
+app.use("/manage-users",UserManageRoutes);
+app.use("/challenges",ChallengeRoutes);
 
 app.listen('5001',()=>{
     console.log("server running");

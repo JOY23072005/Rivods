@@ -25,10 +25,26 @@ const organizationSchema = new mongoose.Schema(
             type:String,
         },
 
+        logo: {
+            url: {
+                type: String,
+                default: null,
+            },
+            publicId: {
+                type: String,
+                default: null,
+            },
+        },
+
         category : {
             type:String,
             required:true,
-        }
+        },
+
+        createdBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        },
     },
     { timestamps: true }
 );

@@ -48,7 +48,16 @@ export const protectRoute = async (req, res, next) => {
       });
     }
 
-    req.userId = decoded.userId;
+    req.userId = user._id;
+
+    req.user = {
+      _id: user._id,
+      role: user.role,
+      organizationId: user.organizationId,
+      email: user.email,
+      name: user.name,
+    };
+
     next();
 
   } catch (error) {

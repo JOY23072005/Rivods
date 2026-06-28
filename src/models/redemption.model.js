@@ -22,6 +22,12 @@ const redemptionSchema = new mongoose.Schema(
         required: true,
     },
 
+    status: {
+        type: String,
+        enum: ["PENDING", "CLAIMED", "CANCELLED"],
+        default: "PENDING",
+    },
+
     coinsUsed: {
         type: Number,
         required: true,
@@ -30,7 +36,7 @@ const redemptionSchema = new mongoose.Schema(
     claimedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User", // shopkeeper/admin
-        required: true,
+        default: null,
     },
 },
 {

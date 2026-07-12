@@ -9,6 +9,7 @@ import OTP from "../models/otp.model.js";
 import RefreshToken from "../models/refreshToken.model.js"
 
 import jwt from "jsonwebtoken";
+import Organization from "../models/organization.model.js";
 
 export const signup = async (req,res) =>{
     const {name,email,phone,dob,gender,orgid,empid,roll,password} = req.body || {} ;
@@ -255,12 +256,23 @@ export const requestOtp = async (req, res) => {
 
     await connectDB();
 
-    const user = await User.exists({
+    const org = await Organization.findById(orgid);
+    
+    if(!org){
+        return res.status(400).json({
+            message: "No organization found for the given organization ID",
+        });
+    }
+
+    // console.log(org);
+
+    const user = await User.findOne({
         $or: [{ email }, { phone }],
         organizationId: orgid,
     });
+    // console.log(user + user.isActive);
 
-    if (!user.isActive) {
+    if (user && !user.isActive) {
         return res.status(403).json({
             message: "Account disabled",
         });

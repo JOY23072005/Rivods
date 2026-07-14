@@ -1,9 +1,12 @@
 import { connectDB } from "../lib/db.js";
 
 import Challenge from "../models/challenge.model.js";
-import ChallengeProgress from "../models/challengeProgress.model.js";
-import DailyStepLog from "../models/dailyStepLog.model.js";
+import ChallengeProgress from "../models/challengeProgress.model.js"
 import User from "../models/user.model.js";
+
+import { getChallenge } from "../lib/challenges/getChallenge.js";
+import { getChallengeProgress } from "../lib/challenges/getChallengeProgress.js";
+import { joinChallenge as joinChallengeHelper } from "../lib/challenges/joinChallenge.js";
 
 export const createChallenge = async (req, res) => {
   try {
@@ -168,15 +171,10 @@ export const deleteChallenge = async (
     await connectDB();
 
     const challenge =
-      await Challenge.findById(
-        req.params.challengeId
+      await getChallenge(
+        req.params.challengeId,
+        req.user.organizationId
       );
-
-    if (!challenge) {
-      return res.status(404).json({
-        message: "Challenge not found",
-      });
-    }
 
     challenge.isActive = false;
 
@@ -195,8 +193,10 @@ export const deleteChallenge = async (
       error.message
     );
 
-    return res.status(500).json({
-      message: "Server error",
+    return res.status(
+      error.statusCode || 500
+    ).json({
+      message: error.message || "Internal server error",
     });
   }
 };
@@ -229,9 +229,34 @@ export const getActiveChallenges =
           createdAt: -1,
         });
 
+      const joinedChallenges =
+        await ChallengeProgress.find({
+          userId: req.user._id,
+        }).select("challengeId");
+
+      const joinedIds =
+        new Set(
+          joinedChallenges.map(
+            (item) =>
+              item.challengeId.toString()
+          )
+        );
+
+      const result =
+        challenges.map(
+          (challenge) => ({
+            ...challenge.toObject(),
+
+            joined:
+              joinedIds.has(
+                challenge._id.toString()
+              ),
+          })
+        );
+
       return res.status(200).json({
         success: true,
-        challenges,
+        challenges: result,
       });
 
     } catch (error) {
@@ -241,92 +266,136 @@ export const getActiveChallenges =
         error.message
       );
 
-      return res.status(500).json({
-        message: "Server error",
+      return res.status(
+        error.statusCode || 500
+      ).json({
+        message: error.message || "Internal server error",
       });
     }
   };
 
-  export const getMyChallenges =
+export const joinChallenge = async (req, res) => {
+  try {
+    await connectDB();
+
+    const { challengeId } = req.params;
+
+    const challenge = await getChallenge(
+        req.params.challengeId,
+        req.user.organizationId
+    );
+
+    if (!challenge.isActive) {
+      return res.status(400).json({
+        message: "Challenge is not active",
+      });
+    }
+
+    const today = new Date();
+
+    if (
+      today < challenge.startDate ||
+      today > challenge.endDate
+    ) {
+      return res.status(400).json({
+        message: "Challenge is not currently running",
+      });
+    }
+
+    const progress=
+      await joinChallengeHelper(
+      challenge,
+      req.user
+    );
+
+    return res.status(201).json({
+      success: true,
+      message:
+        "Challenge joined successfully",
+      progress,
+    });
+
+  } catch (error) {
+
+    console.log(
+      "joinChallenge",
+      error.message
+    );
+
+    return res.status(
+      error.statusCode || 500
+    ).json({
+      message: error.message || "Internal server error",
+    });
+  }
+};
+
+export const getChallengeById =
   async (req, res) => {
 
     try {
 
       await connectDB();
 
-      const challenges =
-        await Challenge.find({
-          organizationId:
-            req.user.organizationId,
+      const { challengeId } =
+        req.params;
 
-          isActive: true,
-        }).sort({
-          createdAt: -1,
-        });
+      const challenge=
+        await getChallenge(
+        req.params.challengeId,
+        req.user.organizationId
+      );
 
-      const result = [];
+      const progress=
+        await getChallengeProgress(
+        challenge._id,
+        req.user._id
+      );
 
-      for (const challenge of challenges) {
+      if (!progress) {
 
-        let progress =
-          await ChallengeProgress.findOne({
+        return res.status(200).json({
+          success: true,
+
+          joined: false,
+
+          challenge: {
             challengeId:
               challenge._id,
 
-            userId:
-              req.user._id,
-          });
+            title:
+              challenge.title,
 
-        if (!progress) {
+            description:
+              challenge.description,
 
-          const stepLogs =
-            await DailyStepLog.find({
-              userId:
-                req.user._id,
+            challengeType:
+              challenge.challengeType,
 
-              createdAt: {
-                $gte:
-                  challenge.startDate,
+            goalValue:
+              challenge.goalValue,
 
-                $lte:
-                  challenge.endDate,
-              },
-            });
+            rewardCoins:
+              challenge.rewardCoins,
 
-          const totalSteps =
-            stepLogs.reduce(
-              (sum, log) =>
-                sum + log.steps,
-              0
-            );
+            startDate:
+              challenge.startDate,
 
-          progress =
-            await ChallengeProgress.create({
-              challengeId:
-                challenge._id,
+            endDate:
+              challenge.endDate,
 
-              userId:
-                req.user._id,
+            isActive:
+              challenge.isActive,
+          },
+        });
+      }
 
-              organizationId:
-                req.user.organizationId,
+      return res.status(200).json({
+        success: true,
 
-              currentValue:
-                totalSteps,
+        joined: true,
 
-              isCompleted:
-                totalSteps >=
-                challenge.goalValue,
-
-              completedAt:
-                totalSteps >=
-                challenge.goalValue
-                  ? new Date()
-                  : null,
-            });
-        }
-
-        result.push({
+        challenge: {
           challengeId:
             challenge._id,
 
@@ -345,6 +414,18 @@ export const getActiveChallenges =
           rewardCoins:
             challenge.rewardCoins,
 
+          startDate:
+            challenge.startDate,
+
+          endDate:
+            challenge.endDate,
+
+          isActive:
+            challenge.isActive,
+
+          joinedAt:
+            progress.joinedAt,
+
           currentValue:
             progress.currentValue,
 
@@ -361,59 +442,55 @@ export const getActiveChallenges =
           isCompleted:
             progress.isCompleted,
 
+          completedAt:
+            progress.completedAt,
+
           rewardGranted:
             progress.rewardGranted,
-
-          endDate:
-            challenge.endDate,
-        });
-      }
-
-      return res.status(200).json({
-        success: true,
-        challenges: result,
+        },
       });
 
     } catch (error) {
 
       console.log(
-        "getMyChallenges",
+        "getChallengeById",
         error.message
       );
 
-      return res.status(500).json({
-        message: "Server error",
+      return res.status(
+        error.statusCode || 500
+      ).json({
+        message: error.message || "Internal server error",
       });
     }
   };
 
-export const claimChallengeReward = async (
+  export const claimChallengeReward = async (
   req,
   res
 ) => {
   try {
+
     await connectDB();
 
-    const challenge =
-      await Challenge.findById(
-        req.params.challengeId
-      );
+    const { challengeId } =
+      req.params;
 
-    if (!challenge) {
-      return res.status(404).json({
-        message: "Challenge not found",
-      });
-    }
+    const challenge = await getChallenge(
+      req.params.challengeId,
+      req.user.organizationId
+    );
 
-    const progress =
-      await ChallengeProgress.findOne({
-        challengeId: challenge._id,
-        userId: req.userId,
-      });
+    const progress=
+      await getChallengeProgress(
+      challenge._id,
+      req.user._id
+    );
 
     if (!progress) {
-      return res.status(404).json({
-        message: "Progress not found",
+      return res.status(400).json({
+        message:
+          "You have not joined this challenge",
       });
     }
 
@@ -432,7 +509,7 @@ export const claimChallengeReward = async (
     }
 
     await User.findByIdAndUpdate(
-      req.userId,
+      req.user._id,
       {
         $inc: {
           rewardCoinsBalance:
@@ -450,6 +527,7 @@ export const claimChallengeReward = async (
 
     return res.status(200).json({
       success: true,
+
       rewardCoins:
         challenge.rewardCoins,
 
@@ -461,12 +539,13 @@ export const claimChallengeReward = async (
 
     console.log(
       "claimChallengeReward",
-      error
+      error.message
     );
 
-    return res.status(500).json({
-      message:
-        "Internal server error",
+    return res.status(
+      error.statusCode || 500
+    ).json({
+      message: error.message || "Internal server error",
     });
   }
 };

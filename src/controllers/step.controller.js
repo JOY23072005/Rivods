@@ -2,7 +2,7 @@ import { connectDB } from "../lib/db.js";
 
 import User from "../models/user.model.js";
 import DailyStepLog from "../models/dailyStepLog.model.js";
-import { updateChallengeProgress } from "../lib/utils/updateChallengeProgress.js";
+import { updateChallengeProgress } from "../lib/challenges/updateChallengeProgress.js";
 
 export const syncSteps = async (req, res) => {
   try {
@@ -76,7 +76,9 @@ export const syncSteps = async (req, res) => {
       user.totalRewardCoinsEarned += extraCoins;
     }
 
-    updateChallengeProgress(userId);
+    // console.log("step sync called calling update Challenge");
+    await updateChallengeProgress(userId);
+    // console.log("Step Sync updated challenge steps");
 
     user.lastSyncedAt = new Date();
 

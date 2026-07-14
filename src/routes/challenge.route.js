@@ -5,7 +5,8 @@ import {
   updateChallenge,
   deleteChallenge,
   getActiveChallenges,
-  getMyChallenges,
+  joinChallenge,
+  getChallengeById,
   claimChallengeReward,
 } from "../controllers/challenge.controller.js";
 
@@ -22,7 +23,17 @@ router.delete("/:challengeId", protectRoute, authorize('admin','sub-admin'), del
 
 router.get("/active", protectRoute, getActiveChallenges);
 
-router.get("/my", protectRoute, getMyChallenges);
+router.get(
+  "/:challengeId",
+  protectRoute,
+  getChallengeById
+);
+
+router.post(
+  "/:challengeId/join",
+  protectRoute,
+  joinChallenge
+);
 
 router.post(
   "/:challengeId/claim",

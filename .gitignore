@@ -2,5 +2,6 @@ node_modules
 .env
 .gitignore
 src/lib/seed.js
-
+seed.js
+Postman Testing/
 # hansjoy597@gmail.com

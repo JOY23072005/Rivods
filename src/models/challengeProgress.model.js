@@ -20,6 +20,13 @@ const challengeProgressSchema = new mongoose.Schema(
       required: true,
     },
 
+    // User enrolled in challenge
+    joinedAt: {
+      type: Date,
+      default: Date.now,
+    },
+
+    // Current challenge progress
     currentValue: {
       type: Number,
       default: 0,
@@ -40,8 +47,20 @@ const challengeProgressSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    lastUpdatedAt: {
+      type: Date,
+      default: Date.now,
+    },
+
+    startingSteps: {
+      type: String,
+      default: 0,
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 challengeProgressSchema.index(
@@ -49,8 +68,18 @@ challengeProgressSchema.index(
     challengeId: 1,
     userId: 1,
   },
-  { unique: true }
+  {
+    unique: true,
+  }
 );
+
+challengeProgressSchema.index({
+  userId: 1,
+});
+
+challengeProgressSchema.index({
+  challengeId: 1,
+});
 
 challengeProgressSchema.index({
   userId: 1,

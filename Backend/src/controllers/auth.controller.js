@@ -180,6 +180,7 @@ export const login = async (req,res) =>{
             success: true,
             message: "Login successful.",
             token:AccessToken,
+            user:user,
             refreshToken: Refresh_Token 
         })
     } catch(error){

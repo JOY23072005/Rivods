@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Building2, UserCog, Users, UserCircle, Gift, Trophy, Ticket, AlertTriangle, Clock, RefreshCw } from "lucide-react";
-import { getDashboard } from "../../api/dashboard";
+import { getDashboard } from "../../api/dashboard.js";
 
 const STAT_CONFIG = [
   { key: "organizations", title: "Organizations", icon: Building2, color: "bg-blue-500/10 text-blue-600" },

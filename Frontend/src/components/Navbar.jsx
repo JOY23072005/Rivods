@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Sun, Moon, ChevronDown, LogOut, User, Settings } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext.jsx";
 
 export default function Navbar() {
   const { user, logout } = useAuth();

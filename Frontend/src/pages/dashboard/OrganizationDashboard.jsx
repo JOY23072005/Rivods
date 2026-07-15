@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { UserCircle, Users, Gift, Trophy, Ticket, AlertTriangle, Clock, RefreshCw } from "lucide-react";
-import { getDashboard } from "../../api/dashboard";
+import { getDashboard } from "../../api/dashboard.js";
 
 const STAT_CONFIG = [
   { key: "employees", title: "Employees", icon: UserCircle, color: "bg-teal-500/10 text-teal-600" },

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
-import Navbar from "../components/Navbar";
-import Sidebar from "../components/Sidebar";
-import { useAuth } from "../context/AuthContext";
+import Navbar from "../components/Navbar.jsx";
+import Sidebar from "../components/Sidebar.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 
 /**
  * Responsive dashboard shell.

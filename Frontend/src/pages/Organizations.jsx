@@ -12,7 +12,7 @@ import {
   ChevronRight,
   X,
 } from "lucide-react";
-import { getOrganizations, toggleOrganizationStatus } from "../api/organizations";
+import { getOrganizations, toggleOrganizationStatus } from "../api/organizations.js";
 
 const FILTERS = [
   { key: "all", label: "All" },

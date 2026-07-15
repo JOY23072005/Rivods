@@ -1,8 +1,8 @@
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext.jsx";
 
-import AdminDashboard from "./AdminDashboard";
-import OrganizationDashboard from "./OrganizationDashboard";
+import AdminDashboard from "./AdminDashboard.jsx";
+import OrganizationDashboard from "./OrganizationDashboard.jsx";
 // import OrganizationDashboard from "./OrganizationDashboard";
 
 export default function Dashboard() {

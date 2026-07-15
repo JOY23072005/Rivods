@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, Loader2 } from "lucide-react";
-import { login, requestOtp, verifyOtp } from "../api/auth";
-import { useAuth } from "../context/AuthContext";
-import axiosInstance from "../api/axios";
+import { login, requestOtp, verifyOtp } from "../api/auth.js";
+import { useAuth } from "../context/AuthContext.jsx";
+import axiosInstance from "../api/axios.js";
 
 // Where each role lands after login.
 const ROLE_REDIRECTS = {

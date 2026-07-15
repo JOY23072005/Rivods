@@ -29,7 +29,6 @@ const NAV_ITEMS_BY_ROLE = {
     { label: "Profile", path: "/profile", icon: UserCog },
   ],
   staff: [
-    { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
     { label: "Redemptions", path: "/redemptions", icon: TicketCheck },
   ],
 };

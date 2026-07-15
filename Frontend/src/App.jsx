@@ -13,67 +13,69 @@ const router = createBrowserRouter([
   },
 
   {
-    element: (
-      <ProtectedRoute allowedRoles={["admin", "sub-admin"]}>
-        <DashboardLayout/>
-      </ProtectedRoute>
-    ),
-    children: [
-      {
-        path: "/dashboard",
-        element: <Dashboard />,
-      },
+  element: (
+    <ProtectedRoute>
+      <DashboardLayout />
+    </ProtectedRoute>
+  ),
+  children: [
+    {
+      path: "/dashboard",
+      element: (
+        <ProtectedRoute allowedRoles={["admin", "sub-admin"]}>
+          <Dashboard />
+        </ProtectedRoute>
+      ),
+    },
 
-      {
-        path: "/organizations",
-        element: <div>Organizations</div>,
-      },
+    {
+      path: "/organizations",
+      element: (
+        <ProtectedRoute allowedRoles={["admin"]}>
+          <span>Organization</span>
+        </ProtectedRoute>
+      ),
+    },
 
-      {
-        path: "/users",
-        element: <div>Users</div>,
-      },
+    {
+      path: "/users",
+      element: (
+        <ProtectedRoute allowedRoles={["admin", "sub-admin"]}>
+          <span>Users</span>
+        </ProtectedRoute>
+      ),
+    },
 
-      {
-        path: "/rewards",
-        element: <div>Rewards</div>,
-      },
+    {
+      path: "/rewards",
+      element: (
+        <ProtectedRoute allowedRoles={["admin", "sub-admin"]}>
+          <span>Rewards</span>
+        </ProtectedRoute>
+      ),
+    },
 
-      {
-        path: "/challenges",
-        element: <div>Challenges</div>,
-      },
+    {
+      path: "/challenges",
+      element: (
+        <ProtectedRoute allowedRoles={["admin", "sub-admin"]}>
+          <span>Challenges</span>
+        </ProtectedRoute>
+      ),
+    },
 
-      {
-        path: "/redemptions",
-        element: <div>Redemptions</div>,
-      },
-    ],
-  },
-
-  {
-    element: (
-      <ProtectedRoute allowedRoles={["staff"]}>
-        <DashboardLayout title="Staff Panel" />
-      </ProtectedRoute>
-    ),
-    children: [
-      {
-        path: "/staff/redemptions",
-        element: <div>Staff Redemptions</div>,
-      },
-    ],
-  },
-
-  {
-    path: "/",
-    element: <Navigate to="/dashboard" replace />,
-  },
-
-  {
-    path: "*",
-    element: <Navigate to="/dashboard" replace />,
-  },
+    {
+      path: "/redemptions",
+      element: (
+        <ProtectedRoute
+          allowedRoles={["admin", "sub-admin", "staff"]}
+        >
+          <span>Redemptions</span>
+        </ProtectedRoute>
+      ),
+    },
+  ],
+}
 ]);
 
 export default function App() {

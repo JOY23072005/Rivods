@@ -105,8 +105,6 @@ export const updateOrganizationLogo = async (req,res)=>{
 
     const result = await uploadFromBuffer();
 
-    organization.imageurl = result.secure_url;
-
     organization.logo = {
     url: result.secure_url,
     publicId: result.public_id,
@@ -116,7 +114,7 @@ export const updateOrganizationLogo = async (req,res)=>{
 
     return res.status(200).json({
       success:true,
-      imageurl: organization.imageurl,
+      imageurl: organization.logo.url,
     });
 
   }catch(error){
@@ -141,7 +139,7 @@ export const getAllOrg = async (req, res) => {
       organizations.map((org) => ({
         orgid: org._id,
         name: org.name,
-        image: org.imageurl,
+        image_url: org.logo?.url || null,
         category: org.category,
       }));
 
@@ -163,36 +161,39 @@ export const getAllOrg = async (req, res) => {
   }
 };
 
-export const getOrganizationById = async (
-  req,
-  res
-) => {
+export const getOrganizationById = async (req, res) => {
   try {
-
     await connectDB();
 
-    const organization =
-      await Organization.findById(
-        req.params.orgId
-      ).populate(
-        "adminId",
-        "name email"
-      );
+    const organization = await Organization.findById(
+      req.params.orgId
+    ).populate(
+      "createdBy",
+      "name email"
+    );
 
     if (!organization) {
       return res.status(404).json({
-        message:
-          "Organization not found",
+        message: "Organization not found",
       });
     }
 
     return res.status(200).json({
       success: true,
-      organization,
+      organization: {
+        orgid: organization._id,
+        name: organization.name,
+        code: organization.code,
+        category: organization.category,
+        image_url: organization.logo?.url || null,
+        isActive: organization.isActive,
+        createdBy: organization.createdBy,
+        createdAt: organization.createdAt,
+        updatedAt: organization.updatedAt,
+      },
     });
 
   } catch (error) {
-
     console.log(
       "Error in getOrganizationById:",
       error.message

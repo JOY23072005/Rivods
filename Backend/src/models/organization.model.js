@@ -21,10 +21,6 @@ const organizationSchema = new mongoose.Schema(
             default: true,
         },
 
-        imageurl : {
-            type:String,
-        },
-
         logo: {
             url: {
                 type: String,

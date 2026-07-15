@@ -5,6 +5,7 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard/Dashboard";
+import Organizations from "./pages/Organizations";
 
 const router = createBrowserRouter([
   {
@@ -32,7 +33,7 @@ const router = createBrowserRouter([
       path: "/organizations",
       element: (
         <ProtectedRoute allowedRoles={["admin"]}>
-          <span>Organization</span>
+          <Organizations/>
         </ProtectedRoute>
       ),
     },

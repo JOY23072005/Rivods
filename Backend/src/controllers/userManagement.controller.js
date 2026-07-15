@@ -20,6 +20,7 @@ export const createUser = async (
       phone,
       gender,
       dob,
+      role,
       employeeId,
     } = req.body;
 
@@ -61,7 +62,7 @@ export const createUser = async (
 
         employeeId,
 
-        role: "user",
+        role: role,
       });
 
     return res.status(201).json({

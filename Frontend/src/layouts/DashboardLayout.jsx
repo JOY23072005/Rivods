@@ -3,6 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import Navbar from "../components/Navbar.jsx";
 import Sidebar from "../components/Sidebar.jsx";
+import { Toaster } from "react-hot-toast";
 
 /**
  * Responsive dashboard shell.
@@ -44,6 +45,27 @@ export default function DashboardLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
+      <Toaster
+        position="bottom-left" // Position layout options: top-left, top-center, top-right, bottom-left, bottom-center, bottom-right
+        reverseOrder={false}
+        toastOptions={{
+          // Match your design token classes cleanly!
+          className: "bg-card border border-border text-foreground text-sm rounded-lg shadow-md",
+          duration: 4000, // Auto-close timing footprint: 4000ms (4 seconds)
+          success: {
+            iconTheme: {
+              primary: "#22c55e", // Tailwind green-500 matching token
+              secondary: "#ffffff",
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: "#ef4444", // Tailwind red-500 matching token
+              secondary: "#ffffff",
+            },
+          },
+        }}
+      />
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:w-64 lg:shrink-0 lg:flex-col lg:border-r lg:border-border lg:bg-card">
         <Sidebar/>

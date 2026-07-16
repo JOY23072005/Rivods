@@ -6,6 +6,7 @@ import {
   getUsers,
   getAllUsers,
   updateUserStatus,
+  updateUser,
 } from "../controllers/userManagement.controller.js";
 
 import { protectRoute } from "../middleware/auth.middleware.js";
@@ -52,6 +53,13 @@ router.patch(
   protectRoute,
   authorize("admin", "sub-admin"),
   updateUserStatus
+);
+
+router.patch(
+  "/:userId",
+  protectRoute,
+  authorize("admin", "sub-admin"),
+  updateUser
 );
 
 export default router;

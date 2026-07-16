@@ -445,3 +445,100 @@ export const updateUserStatus = async (
     });
   }
 };
+
+export const updateUser = async (req, res) => {
+  try {
+    await connectDB();
+
+    const { userId } = req.params;
+
+    const {
+      name,
+      phone,
+      gender,
+      dob,
+      employeeId,
+    } = req.body;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    // Organization Admin can only edit users in their own organization
+    if (
+      req.user.role === "sub-admin" &&
+      user.organizationId.toString() !==
+        req.user.organizationId.toString()
+    ) {
+      return res.status(403).json({
+        message: "Unauthorized",
+      });
+    }
+
+    // Optional phone uniqueness check
+    if (phone && phone !== user.phone) {
+      const existingPhone =
+        await User.findOne({
+          organizationId: user.organizationId,
+          phone,
+          _id: { $ne: user._id },
+        });
+
+      if (existingPhone) {
+        return res.status(400).json({
+          message:
+            "Phone number already exists",
+        });
+      }
+    }
+
+    if (name !== undefined)
+      user.name = name.trim();
+
+    if (phone !== undefined)
+      user.phone = phone.trim();
+
+    if (gender !== undefined)
+      user.gender = gender;
+
+    if (dob !== undefined)
+      user.dob = dob;
+
+    if (employeeId !== undefined)
+      user.employeeId = employeeId;
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "User updated successfully.",
+      user: {
+        userid: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        gender: user.gender,
+        dob: user.dob,
+        employeeId: user.employeeId,
+        role: user.role,
+        isActive: user.isActive,
+      },
+    });
+
+  } catch (error) {
+
+    console.log(
+      "updateUser:",
+      error.message
+    );
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+
+  }
+};

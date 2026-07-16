@@ -83,25 +83,66 @@ export const createUser = async (
     });
   }
 };
-// for admins
+
 export const updateUserRole = async (req, res) => {
   try {
     await connectDB();
 
+    const { userId } = req.params;
     const { role } = req.body;
 
-    if (!["admin", "sub-admin", "user"].includes(role)) {
-      return res.status(400).json({
-        message: "Invalid role",
-      });
-    }
-
-    const user = await User.findById(req.params.userId);
+    const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({
         message: "User not found",
       });
+    }
+
+    // Cannot change yourself
+    if (user._id.toString() === req.userId.toString()) {
+      return res.status(400).json({
+        message: "You cannot change your own role",
+      });
+    }
+
+    // Admin permissions
+    if (req.user.role === "admin") {
+      const allowedRoles = [
+        "user",
+        "staff",
+        "sub-admin",
+      ];
+
+      if (!allowedRoles.includes(role)) {
+        return res.status(400).json({
+          message: "Invalid role",
+        });
+      }
+    }
+
+    else if (req.user.role === "sub-admin") {
+      const allowedRoles = [
+        "user",
+        "staff",
+      ];
+
+      if (!allowedRoles.includes(role)) {
+        return res.status(403).json({
+          message:
+            "You are not allowed to assign this role",
+        });
+      }
+
+      // Prevent managing users outside own organization
+      if (
+        user.organizationId.toString() !==
+        req.user.organizationId.toString()
+      ) {
+        return res.status(403).json({
+          message: "Unauthorized",
+        });
+      }
     }
 
     user.role = role;
@@ -110,52 +151,15 @@ export const updateUserRole = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Role updated successfully",
-    });
-
-  } catch (error) {
-    console.log("updateUserRole", error);
-
-    return res.status(500).json({
-      message: "Internal server error",
-    });
-  }
-};
-
-// for sub-admins & admins
-export const assignOrganizationAdmin = async (
-  req,
-  res
-) => {
-  try {
-    await connectDB();
-
-    const userId = req.params.userId;
-
-    const user =
-      await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-      });
-    }
-
-    user.role = "sub-admin";
-
-    await user.save();
-
-    return res.status(200).json({
-      success: true,
-      message:
-        "Organization admin assigned successfully",
+      message: "User role updated successfully",
+      role: user.role,
     });
 
   } catch (error) {
 
     console.log(
-      "assignOrganizationAdmin",
-      error
+      "updateUserRole:",
+      error.message
     );
 
     return res.status(500).json({

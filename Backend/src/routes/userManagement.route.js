@@ -10,7 +10,6 @@ import {
 
 import { protectRoute } from "../middleware/auth.middleware.js";
 import { authorize } from "../middleware/authorize.middleware.js";
-import { assignOrganizationAdmin } from "../controllers/userManagement.controller.js";
 
 const router = express.Router();
 
@@ -27,15 +26,8 @@ router.post(
 router.patch(
   "/:userId/role",
   protectRoute,
-  authorize("admin"),
-  updateUserRole
-);
-
-router.patch(
-  "/:userId/role/sub-admin",
-  protectRoute,
   authorize("admin","sub-admin"),
-  assignOrganizationAdmin
+  updateUserRole
 );
 
 router.get(

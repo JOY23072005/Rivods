@@ -3,7 +3,6 @@ import { Outlet, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import Navbar from "../components/Navbar.jsx";
 import Sidebar from "../components/Sidebar.jsx";
-import { useAuth } from "../context/AuthContext.jsx";
 
 /**
  * Responsive dashboard shell.
@@ -20,8 +19,6 @@ import { useAuth } from "../context/AuthContext.jsx";
 export default function DashboardLayout() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const location = useLocation();
-  const { user,logout } = useAuth();
-  const role = user.role;
   // Close the mobile drawer whenever the route changes.
   useEffect(() => {
     setIsDrawerOpen(false);
@@ -49,7 +46,7 @@ export default function DashboardLayout() {
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:w-64 lg:shrink-0 lg:flex-col lg:border-r lg:border-border lg:bg-card">
-        <Sidebar role={role}/>
+        <Sidebar/>
       </aside>
 
       {/* Mobile drawer + backdrop */}
@@ -84,7 +81,7 @@ export default function DashboardLayout() {
             </button>
           </div>
           <div className="flex-1 overflow-y-auto">
-            <Sidebar role={role}/>
+            <Sidebar/>
           </div>
         </div>
       </div>

@@ -9,6 +9,7 @@ import {
   TicketCheck,
   UserCog,
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const NAV_ITEMS_BY_ROLE = {
   admin: [
@@ -33,13 +34,21 @@ const NAV_ITEMS_BY_ROLE = {
   ],
 };
 
+const ROLE_LABELS = {
+  admin: "Platform Admin",
+  "sub-admin": "Organization Admin",
+  staff: "Staff",
+  user: "Employee",
+};
+
 /**
  * Sidebar content only — no drawer, overlay, or open/close state.
  * DashboardLayout owns the responsive shell (desktop column vs.
  * mobile drawer) and renders this as its `sidebar` prop.
  */
-const Sidebar = ({ role }) => {
-  const navItems = NAV_ITEMS_BY_ROLE[role] ?? [];
+const Sidebar = () => {
+  const { user } = useAuth();
+  const navItems = NAV_ITEMS_BY_ROLE[user.role] ?? [];
 
   return (
     <div className="flex h-full flex-col">
@@ -48,7 +57,7 @@ const Sidebar = ({ role }) => {
       </div>
 
       <p className="px-5 pb-2 text-xs font-medium uppercase tracking-wide text-foreground/50">
-        {role} menu
+        {ROLE_LABELS[user.role]} menu
       </p>
 
       <nav className="flex-1 space-y-1 px-3">

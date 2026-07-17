@@ -26,7 +26,7 @@ export default function UserForm({ initialValues, loading, mode = "create", allo
   const fileInputRef = useRef(null);
 
   const [imagePreview, setImagePreview] = useState(
-    initialValues?.image_url || null
+    initialValues?.profileImage.url || null
   );
   
   const {
@@ -55,7 +55,7 @@ export default function UserForm({ initialValues, loading, mode = "create", allo
       fileInputRef.current.value = "";
     }
 
-    setImagePreview(initialValues?.image_url || null);
+    setImagePreview(initialValues?.profileImage.url || null);
     
     reset({
       name: initialValues?.name || "",

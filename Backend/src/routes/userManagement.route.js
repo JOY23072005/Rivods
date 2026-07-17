@@ -7,10 +7,12 @@ import {
   getAllUsers,
   updateUserStatus,
   updateUser,
+  updateUserProfileImage,
 } from "../controllers/userManagement.controller.js";
 
 import { protectRoute } from "../middleware/auth.middleware.js";
 import { authorize } from "../middleware/authorize.middleware.js";
+import { uploadSingleImage } from "../middleware/upload.middleware.js";
 
 const router = express.Router();
 
@@ -61,5 +63,13 @@ router.patch(
   authorize("admin", "sub-admin"),
   updateUser
 );
+
+router.patch(
+  "/:userId/image",
+  protectRoute,
+  authorize("admin","sub-admin"),
+  uploadSingleImage,
+  updateUserProfileImage
+)
 
 export default router;

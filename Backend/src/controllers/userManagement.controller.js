@@ -4,6 +4,7 @@ import User from "../models/user.model.js";
 import Organization from "../models/organization.model.js";
 
 import { connectDB } from "../lib/db.js";
+import { deleteCloudinaryImage, uploadBufferToCloudinary } from "../lib/uploadImage.js";
 
 export const createUser = async (
   req,
@@ -538,6 +539,81 @@ export const updateUser = async (req, res) => {
 
     return res.status(500).json({
       message: "Internal server error",
+    });
+
+  }
+};
+
+export const updateUserProfileImage = async (
+  req,
+  res
+) => {
+  try {
+
+    await connectDB();
+
+    if (!req.file) {
+      return res.status(400).json({
+        message: "No image provided",
+      });
+    }
+
+    const user =
+      await User.findById(
+        req.params.userId
+      );
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    // Organization Admin restriction
+    if (
+      req.user.role === "sub-admin" &&
+      user.organizationId.toString() !==
+        req.user.organizationId.toString()
+    ) {
+      return res.status(403).json({
+        message: "Unauthorized",
+      });
+    }
+
+    await deleteCloudinaryImage(
+      user.profileImage?.publicId
+    );
+
+    const result =
+      await uploadBufferToCloudinary(
+        req.file.buffer,
+        "rivods/profile-images"
+      );
+
+    user.profileImage = {
+      url: result.secure_url,
+      publicId: result.public_id,
+    };
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Profile image updated successfully",
+      profileImage:
+        user.profileImage.url,
+    });
+
+  } catch (error) {
+
+    console.log(
+      "updateUserProfileImage:",
+      error.message
+    );
+
+    return res.status(500).json({
+      message: "Server Error",
     });
 
   }

@@ -1,8 +1,10 @@
 import { connectDB } from "../lib/db.js";
 import Organization from "../models/organization.model.js";
 
-import cloudinary from "../lib/cloudinary.js";
-import streamifier from "streamifier";
+import {
+  uploadBufferToCloudinary,
+  deleteCloudinaryImage,
+} from "../lib/uploadImage.js";
 
 export const createOrganization = async (req, res) => {
   try {
@@ -79,35 +81,19 @@ export const updateOrganizationLogo = async (req,res)=>{
       });
     }
 
-    const uploadFromBuffer = () =>
-      new Promise((resolve,reject)=>{
-        const stream =
-          cloudinary.uploader.upload_stream(
-            {
-              folder:"rivods/organizations"
-            },
-            (error,result)=>{
-              if(error) reject(error);
-              else resolve(result);
-            }
-          );
+    await deleteCloudinaryImage(
+      organization.logo?.publicId
+    );
 
-        streamifier
-          .createReadStream(req.file.buffer)
-          .pipe(stream);
-      });
-
-    if (organization.logo?.publicId) {
-        await cloudinary.uploader.destroy(
-            organization.logo.publicId
-        );
-    }
-
-    const result = await uploadFromBuffer();
+    const result =
+      await uploadBufferToCloudinary(
+        req.file.buffer,
+        "rivods/organizations"
+      );
 
     organization.logo = {
-    url: result.secure_url,
-    publicId: result.public_id,
+      url: result.secure_url,
+      publicId: result.public_id,
     };
 
     await organization.save();

@@ -4,14 +4,15 @@ import {
   createReward,
   updateReward,
   deleteReward,
-  deactivateReward,
-  activateReward,
   uploadRewardsCSV,
+  ToggleReward,
+  getManageRewards,
+  updateRewardImage,
 } from "../controllers/reward.controller.js";
 
 import {protectRoute} from "../middleware/auth.middleware.js";
 import {authorize} from "../middleware/authorize.middleware.js"
-import {uploadCSV} from "../middleware/upload.middleware.js";
+import {uploadCSV, uploadSingleImage} from "../middleware/upload.middleware.js";
 
 const router = express.Router();
 
@@ -36,17 +37,10 @@ router.delete("/:rewardId",
   deleteReward);
 
 router.patch(
-  "/:rewardId/deactivate",
+  "/:rewardId/toggle",
   protectRoute,
   authorize('admin','sub-admin'),
-  deactivateReward
-);
-
-router.patch(
-  "/:rewardId/activate",
-  protectRoute,
-  authorize('admin','sub-admin'),
-  activateReward
+  ToggleReward
 );
 
 router.post(
@@ -55,6 +49,21 @@ router.post(
    authorize('admin','sub-admin'),
    uploadCSV,
    uploadRewardsCSV
+);
+
+router.patch(
+  "/:rewardId/image",
+  protectRoute,
+  authorize("admin", "sub-admin"),
+  uploadSingleImage,
+  updateRewardImage
+);
+
+router.get(
+  "/manage",
+  protectRoute,
+  authorize("admin", "sub-admin"),
+  getManageRewards
 );
 
 export default router;

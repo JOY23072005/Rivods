@@ -14,7 +14,7 @@ export const uploadImage = async (url, image) => {
       },
     }
   );
-  console.log(res.status,res.message);
+  // console.log(res.status,res.message);
 
   return res.data;
 };

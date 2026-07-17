@@ -23,9 +23,11 @@ export default function UserModal({ mode, user, allowedRoles, canEditRole, open,
   const handleSubmit = async (values) => {
     setLoading(true);
     setError(null);
+    let userId;
     try {
       if (isCreate) {
-          await createUser(values);
+          const res = await createUser(values);
+          userId = res?.user._id;
       }
       else {
           await updateUser(user._id, {
@@ -36,13 +38,6 @@ export default function UserModal({ mode, user, allowedRoles, canEditRole, open,
             employeeId: values.employeeId,
           });
 
-          if (values.image) {
-            await updateUserProfileImage(
-              user._id,
-              values.image
-            );
-          }
-
           if (
             values.role !== user.role &&
             canEditRole
@@ -52,7 +47,17 @@ export default function UserModal({ mode, user, allowedRoles, canEditRole, open,
               values.role
             );
           }
+          userId = user._id;
       }
+      console.log(values);
+      
+      if (values.image) {
+        await updateUserProfileImage(
+          userId,
+          values.image
+        );
+      }
+
       toast.success("User updated");
     } catch (err) {
       setError(

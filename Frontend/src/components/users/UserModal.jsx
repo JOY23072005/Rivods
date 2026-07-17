@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { X, AlertTriangle } from "lucide-react";
 import UserForm from "./UserForm";
-import { createUser, updateUserRole, updateUser } from "../../api/users";
+import { createUser, updateUserRole, updateUser, updateUserProfileImage } from "../../api/users";
 import toast from "react-hot-toast";
 
 export default function UserModal({ mode, user, allowedRoles, canEditRole, open, onClose, onSuccess }) {
@@ -29,21 +29,28 @@ export default function UserModal({ mode, user, allowedRoles, canEditRole, open,
       }
       else {
           await updateUser(user._id, {
-              name: values.name,
-              phone: values.phone,
-              gender: values.gender,
-              dob: values.dob,
-              employeeId: values.employeeId,
+            name: values.name,
+            phone: values.phone,
+            gender: values.gender,
+            dob: values.dob,
+            employeeId: values.employeeId,
           });
 
+          if (values.image) {
+            await updateUserProfileImage(
+              user._id,
+              values.image
+            );
+          }
+
           if (
-              values.role !== user.role &&
-              canEditRole
+            values.role !== user.role &&
+            canEditRole
           ) {
-              await updateUserRole(
-                  user._id,
-                  values.role
-              );
+            await updateUserRole(
+              user._id,
+              values.role
+            );
           }
       }
       toast.success("User updated");

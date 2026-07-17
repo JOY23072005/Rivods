@@ -1,6 +1,11 @@
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Loader2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  Loader2,
+  Image as ImageIcon,
+  Upload,
+  X,
+} from "lucide-react";
 
 const ROLE_LABELS = {
   admin: "Platform Admin",
@@ -18,10 +23,17 @@ export default function UserForm({ initialValues, loading, mode = "create", allo
   const isCreate =
       mode === "create";
 
+  const fileInputRef = useRef(null);
+
+  const [imagePreview, setImagePreview] = useState(
+    initialValues?.image_url || null
+  );
+  
   const {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -36,7 +48,15 @@ export default function UserForm({ initialValues, loading, mode = "create", allo
     },
   });
 
+  const imageFile = watch("image");
+
   useEffect(() => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    setImagePreview(initialValues?.image_url || null);
+    
     reset({
       name: initialValues?.name || "",
       email: initialValues?.email || "",
@@ -60,13 +80,94 @@ export default function UserForm({ initialValues, loading, mode = "create", allo
       role: values.role,
       email: values.email.trim(),
       password: values.password,
+      image: values.image?.[0] || null,
     });
+  };
+
+  useEffect(() => {
+    if (!imageFile?.length) return;
+
+    const url = URL.createObjectURL(imageFile[0]);
+
+    setImagePreview(url);
+
+    return () => URL.revokeObjectURL(url);
+  }, [imageFile]);
+
+  const handleRemoveImage = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    setImagePreview(initialValues?.image_url || null);
   };
 
   const fieldDisabled = loading;
 
   return (
     <form onSubmit={handleSubmit(submitHandler)} className="space-y-5">
+      <div>
+        <label className="mb-2 block text-sm font-medium">
+          Profile Image
+        </label>
+
+        <div className="flex items-center gap-4">
+          <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border">
+            {imagePreview ? (
+              <img
+                src={imagePreview}
+                alt="Profile"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <ImageIcon size={22} />
+            )}
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() =>
+                fileInputRef.current?.click()
+              }
+              className="rounded-md border px-3 py-2 text-sm"
+            >
+              <Upload
+                size={15}
+                className="mr-2 inline"
+              />
+              Upload
+            </button>
+
+            {imagePreview && (
+              <button
+                type="button"
+                disabled={loading}
+                onClick={handleRemoveImage}
+                className="rounded-md border px-3 py-2 text-sm text-red-600"
+              >
+                <X
+                  size={15}
+                  className="mr-2 inline"
+                />
+                Remove
+              </button>
+            )}
+          </div>
+
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            {...register("image")}
+            ref={(e) => {
+              register("image").ref(e);
+              fileInputRef.current = e;
+            }}
+          />
+        </div>
+      </div>
       <div>
         <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-foreground">
           Name

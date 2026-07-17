@@ -39,10 +39,12 @@ export default function OrganizationModal({ mode, organization, open, onClose, o
         );
 
         if (logo instanceof File) {
+          console.log("trying to upload");
           await uploadOrganizationLogo(
             organization.orgid,
             logo
           );
+          console.log("uploaded");
         }
 
       } else {

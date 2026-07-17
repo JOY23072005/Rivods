@@ -1,4 +1,5 @@
 import axiosInstance from "./axios.js";
+import { uploadImage } from "./helpers/upload.js";
 
 /**
  * GET
@@ -97,3 +98,10 @@ export const updateUser = async (
 
   return data;
 };
+
+/**
+ * PATCH
+ * Update user profile image
+ */
+export const updateUserProfileImage = (userId, image) =>
+  uploadImage(`/manage-users/${userId}/image`, image);

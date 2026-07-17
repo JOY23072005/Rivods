@@ -1,4 +1,5 @@
 import axiosInstance from "./axios.js";
+import { uploadImage } from "./helpers/upload.js";
 
 /**
  * GET /organizations
@@ -47,28 +48,8 @@ export const updateOrganization = async (
   return data;
 };
 
-export const uploadOrganizationLogo = async (
-  orgId,
-  file
-) => {
-  const formData = new FormData();
-
-  formData.append("image", file);
-
-  const { data } =
-    await axiosInstance.patch(
-      `/org/${orgId}/logo`,
-      formData,
-      {
-        headers: {
-          "Content-Type":
-            "multipart/form-data",
-        },
-      }
-    );
-
-  return data;
-};
+export const uploadOrganizationLogo = (orgId, image) => 
+  uploadImage(`/org/${orgId}/logo`, image);
 
 export const toggleOrganizationStatus =
   async (orgId, isActive) => {

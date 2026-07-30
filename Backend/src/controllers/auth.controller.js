@@ -171,6 +171,12 @@ export const login = async (req,res) =>{
             });
         }
 
+        if (user.isSuspended) {
+            return res.status(403).json({
+                message: "Account suspended. Contact administrator.",
+            });
+        }   
+
         const isCorrect = await bcrypt.compare(password,user.password);
         if(!isCorrect){
             return res.status(400).json({message:"Invalid credentials"});

@@ -119,6 +119,20 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
             },
+        fraudScore: {
+            type: Number,
+            default: 0,
+        },
+
+        isSuspended: {
+            type: Boolean,
+            default: false,
+        },
+
+        stepSyncBlocked: {
+            type: Boolean,
+            default: false,
+        },
     },
     { timestamps: true }
 );

@@ -3,6 +3,8 @@ import { connectDB } from "../lib/db.js";
 import User from "../models/user.model.js";
 import DailyStepLog from "../models/dailyStepLog.model.js";
 import { updateChallengeProgress } from "../lib/challenges/updateChallengeProgress.js";
+import { createFraudEvent } from "../lib/fraud/createFraudEvent.js";
+import FraudEvent from "../models/fraudEvent.model.js";
 
 export const syncSteps = async (req, res) => {
   try {
@@ -27,6 +29,49 @@ export const syncSteps = async (req, res) => {
         message: "User not found",
       });
     }
+    if (user.stepSyncBlocked || !user.isActive) {
+        return res.status(403).json({
+            message: "Step syncing has been temporarily disabled due to suspicious activity."
+        });
+    }
+
+    const { deviceId } = req.body;
+
+    // Fraud Detection - Same device used by another account today
+    if (deviceId) {
+      const suspiciousLog = await DailyStepLog.findOne({
+        deviceId,
+        date: today,
+        userId: {
+          $ne: user._id,
+        },
+      });
+
+      if (suspiciousLog) {
+
+        // Prevent duplicate fraud events for the same day
+        const existingFraud = await FraudEvent.findOne({
+          userId: user._id,
+          deviceId,
+          eventType: "DEVICE_SHARED",
+          createdAt: {
+            $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+          },
+        });
+
+        if (!existingFraud) {
+          await createFraudEvent({
+            userId: user._id,
+            organizationId: user.organizationId,
+            deviceId,
+            eventType: "DEVICE_SHARED",
+            metadata: {
+              previousUser: suspiciousLog.userId,
+            },
+          });
+        }
+      }
+    }
 
     let dailyLog = await DailyStepLog.findOne({
       userId,
@@ -44,6 +89,7 @@ export const syncSteps = async (req, res) => {
         date: today,
         steps,
         coinsEarned: earnedCoins,
+        deviceId,
       });
 
       user.totalSteps += steps;
@@ -68,6 +114,7 @@ export const syncSteps = async (req, res) => {
 
       dailyLog.steps = steps;
       dailyLog.coinsEarned = updatedCoins;
+      dailyLog.deviceId = deviceId;
 
       await dailyLog.save();
 

@@ -30,6 +30,12 @@ const dailyStepLogSchema = new mongoose.Schema(
         required: true,
         default: 0,
     },
+
+    deviceId: {
+        type: String,
+        default: null,
+        index: true,
+    },
 },
 {
     timestamps: true,

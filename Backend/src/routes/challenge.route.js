@@ -8,6 +8,7 @@ import {
   joinChallenge,
   getChallengeById,
   claimChallengeReward,
+  getAdminChallenges,
 } from "../controllers/challenge.controller.js";
 
 import { protectRoute } from "../middleware/auth.middleware.js";
@@ -39,6 +40,13 @@ router.post(
   "/:challengeId/claim",
   protectRoute,
   claimChallengeReward
+);
+
+router.get(
+  "/admin",
+  protectRoute,
+  authorize("admin", "sub-admin"),
+  getAdminChallenges
 );
 
 export default router;

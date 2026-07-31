@@ -163,41 +163,49 @@ export const updateChallenge = async (
   }
 };
 
-export const deleteChallenge = async (
-  req,
-  res
-) => {
+export const deleteChallenge = async (req, res) => {
   try {
-
     await connectDB();
 
-    const challenge =
-      await getChallenge(
-        req.params.challengeId,
-        req.user.organizationId
-      );
+    const challenge = await Challenge.findById(
+      req.params.challengeId
+    );
 
+    if (!challenge) {
+      return res.status(404).json({
+        message: "Challenge not found",
+      });
+    }
+
+    // Organization Admin -> only own organization
+    if (
+      req.user.role !== "admin" &&
+      challenge.organizationId.toString() !==
+        req.user.organizationId.toString()
+    ) {
+      return res.status(403).json({
+        message: "Forbidden",
+      });
+    }
+
+    // Soft delete
     challenge.isActive = false;
 
     await challenge.save();
 
     return res.status(200).json({
       success: true,
-      message:
-        "Challenge deleted successfully",
+      message: "Challenge deleted successfully",
     });
 
   } catch (error) {
-
     console.log(
       "deleteChallenge",
       error.message
     );
 
-    return res.status(
-      error.statusCode || 500
-    ).json({
-      message: error.message || "Internal server error",
+    return res.status(500).json({
+      message: "Internal server error",
     });
   }
 };
@@ -556,6 +564,178 @@ export const getChallengeById =
       error.statusCode || 500
     ).json({
       message: error.message || "Internal server error",
+    });
+  }
+};
+
+//admin get
+export const getAdminChallenges = async (req, res) => {
+  try {
+    await connectDB();
+
+    const page = Math.max(
+      parseInt(req.query.page) || 1,
+      1
+    );
+
+    const limit = Math.max(
+      parseInt(req.query.limit) || 10,
+      1
+    );
+
+    const search =
+      req.query.search?.trim() || "";
+
+    const challengeType =
+      req.query.challengeType?.trim();
+
+    const isActive =
+      req.query.isActive;
+
+    const organizationId =
+      req.query.organizationId?.trim();
+
+    const query = {};
+
+    // Platform Admin -> all organizations
+    // Organization Admin -> own organization only
+    if (req.user.role !== "admin") {
+      query.organizationId =
+        req.user.organizationId;
+    } else if (organizationId) {
+      query.organizationId =
+        organizationId;
+    }
+
+    if (search) {
+      query.$or = [
+        {
+          title: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+        {
+          description: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+      ];
+    }
+
+    if (challengeType) {
+      query.challengeType =
+        challengeType;
+    }
+
+    if (
+      isActive === "true" ||
+      isActive === "false"
+    ) {
+      query.isActive =
+        isActive === "true";
+    }
+
+    const totalChallenges =
+      await Challenge.countDocuments(
+        query
+      );
+
+    const challenges =
+      await Challenge.find(query)
+        .populate(
+          "organizationId",
+          "name"
+        )
+        .populate(
+          "createdBy",
+          "name"
+        )
+        .sort({
+          createdAt: -1,
+        })
+        .skip((page - 1) * limit)
+        .limit(limit);
+
+    const formattedChallenges =
+      challenges.map((challenge) => ({
+        challengeId:
+          challenge._id,
+
+        title:
+          challenge.title,
+
+        description:
+          challenge.description,
+
+        challengeType:
+          challenge.challengeType,
+
+        goalValue:
+          challenge.goalValue,
+
+        rewardCoins:
+          challenge.rewardCoins,
+
+        image:
+          CHALLENGE_IMAGES[
+            challenge.challengeType
+          ] ||
+          CHALLENGE_IMAGES.custom,
+
+        startDate:
+          challenge.startDate,
+
+        endDate:
+          challenge.endDate,
+
+        isActive:
+          challenge.isActive,
+
+        organization:
+          challenge.organizationId
+            ?.name || null,
+
+        createdBy:
+          challenge.createdBy
+            ?.name || null,
+      }));
+
+    const totalPages =
+      Math.ceil(
+        totalChallenges / limit
+      );
+
+    return res.status(200).json({
+      success: true,
+
+      challenges:
+        formattedChallenges,
+
+      pagination: {
+        page,
+        limit,
+        totalItems:
+          totalChallenges,
+        totalPages,
+        hasNextPage:
+          page < totalPages,
+        hasPrevPage:
+          page > 1,
+      },
+    });
+
+  } catch (error) {
+
+    console.log(
+      "getAdminChallenges:",
+      error.message
+    );
+
+    return res.status(500).json({
+      message:
+        "Internal server error",
     });
   }
 };

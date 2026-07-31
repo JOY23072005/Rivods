@@ -90,9 +90,11 @@ export const updateChallenge = async (
       });
     }
 
+    // Organization Admin -> only own organization
     if (
+      req.user.role !== "admin" &&
       challenge.organizationId.toString() !==
-      req.user.organizationId.toString()
+        req.user.organizationId.toString()
     ) {
       return res.status(403).json({
         message: "Forbidden",

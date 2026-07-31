@@ -16,6 +16,13 @@ import { authorize } from "../middleware/authorize.middleware.js";
 
 const router = express.Router();
 
+router.get(
+  "/admin",
+  protectRoute,
+  authorize("admin", "sub-admin"),
+  getAdminChallenges
+);
+
 router.post("/", protectRoute, authorize('admin','sub-admin'), createChallenge);
 
 router.patch("/:challengeId", protectRoute, authorize('admin','sub-admin'), updateChallenge);
@@ -40,13 +47,6 @@ router.post(
   "/:challengeId/claim",
   protectRoute,
   claimChallengeReward
-);
-
-router.get(
-  "/admin",
-  protectRoute,
-  authorize("admin", "sub-admin"),
-  getAdminChallenges
 );
 
 export default router;

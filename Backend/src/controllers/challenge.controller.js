@@ -455,7 +455,7 @@ export const getChallengeById =
           rewardGranted:
             progress.rewardGranted,
           
-          images:
+          image:
             CHALLENGE_IMAGES[challenge.challengeType] || CHALLENGE_IMAGES.custom
         },
       });

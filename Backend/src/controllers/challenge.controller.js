@@ -7,6 +7,7 @@ import User from "../models/user.model.js";
 import { getChallenge } from "../lib/challenges/getChallenge.js";
 import { getChallengeProgress } from "../lib/challenges/getChallengeProgress.js";
 import { joinChallenge as joinChallengeHelper } from "../lib/challenges/joinChallenge.js";
+import { CHALLENGE_IMAGES } from "../lib/challenges/challengeImage.js";
 
 export const createChallenge = async (req, res) => {
   try {
@@ -251,6 +252,9 @@ export const getActiveChallenges =
               joinedIds.has(
                 challenge._id.toString()
               ),
+            
+            image:
+              CHALLENGE_IMAGES[challenge.challengeType] || CHALLENGE_IMAGES.custom
           })
         );
 
@@ -386,6 +390,9 @@ export const getChallengeById =
 
             isActive:
               challenge.isActive,
+            
+            image:
+              CHALLENGE_IMAGES[challenge.challengeType] || CHALLENGE_IMAGES.custom
           },
         });
       }
@@ -447,6 +454,9 @@ export const getChallengeById =
 
           rewardGranted:
             progress.rewardGranted,
+          
+          images:
+            CHALLENGE_IMAGES[challenge.challengeType] || CHALLENGE_IMAGES.custom
         },
       });
 

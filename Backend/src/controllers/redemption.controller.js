@@ -175,3 +175,180 @@ export const getMyRedemptions = async (
     });
   }
 };
+
+export const getAdminRedemptions = async (req, res) => {
+  try {
+    await connectDB();
+
+    const page = Math.max(parseInt(req.query.page) || 1,1);
+
+    const limit = Math.max(parseInt(req.query.limit) || 10,1);
+
+    const search = req.query.search?.trim() || "";
+
+    const status = req.query.status?.trim();
+
+    const user = await User.findById(req.userId).select("role organizationId");
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    // Organization isolation
+    const query = {};
+
+    if (user.role !== "admin") {
+      query.organizationId = user.organizationId;
+    }
+
+    if (status) {
+      query.status = status;
+    }
+
+    let redemptions = await Redemption.find(query)
+      .populate({
+        path: "userId",
+        select: "name email phone employeeId",
+      })
+      .populate({
+        path: "rewardId",
+        select: "title coinCost image",
+      })
+      .populate({
+        path: "claimedBy",
+        select: "name email employeeId",
+      })
+      .populate({
+        path: "organizationId",
+        select: "name code",
+      })
+      .sort({ createdAt: -1 });
+
+    // Search populated fields
+    if (search) {
+      const searchRegex = new RegExp(search, "i");
+
+      redemptions = redemptions.filter((redemption) => {
+        const user = redemption.userId;
+        const reward = redemption.rewardId;
+
+        return (
+          searchRegex.test(user?.name || "") ||
+          searchRegex.test(user?.email || "") ||
+          searchRegex.test(user?.employeeId || "") ||
+          searchRegex.test(reward?.title || "")
+        );
+      });
+    }
+
+    const totalItems = redemptions.length;
+
+    const totalPages = Math.ceil(
+      totalItems / limit
+    );
+
+    const startIndex =
+      (page - 1) * limit;
+
+    const paginatedRedemptions =
+      redemptions.slice(
+        startIndex,
+        startIndex + limit
+      );
+
+    return res.status(200).json({
+      success: true,
+      redemptions: paginatedRedemptions,
+      pagination: {
+        page,
+        limit,
+        totalItems,
+        totalPages,
+        hasNextPage:
+          page < totalPages,
+        hasPrevPage:
+          page > 1,
+      },
+    });
+
+  } catch (error) {
+    console.log(
+      "getAdminRedemptions:",
+      error.message
+    );
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
+export const getRedemptionById = async (req, res) => {
+  try {
+    await connectDB();
+
+    const user = await User.findById(req.userId).select("role organizationId");
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const query = {
+      _id: req.params.redemptionId,
+    };
+
+    // Non-platform admins can only access
+    // their organization's redemption.
+    if (user.role !== "admin") {
+      query.organizationId =
+        user.organizationId;
+    }
+
+    const redemption =
+      await Redemption.findOne(query)
+        .populate({
+          path: "userId",
+          select:
+            "name email phone employeeId",
+        })
+        .populate({
+          path: "rewardId",
+          select:
+            "title coinCost image",
+        })
+        .populate({
+          path: "claimedBy",
+          select:
+            "name email employeeId",
+        })
+        .populate({
+          path: "organizationId",
+          select: "name code",
+        });
+
+    if (!redemption) {
+      return res.status(404).json({
+        message: "Redemption not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      redemption,
+    });
+
+  } catch (error) {
+    console.log(
+      "getRedemptionById:",
+      error.message
+    );
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
